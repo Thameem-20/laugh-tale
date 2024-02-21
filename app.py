@@ -37,7 +37,7 @@ class NormalJoke(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     joke = db.Column(db.Text, nullable=False)
-    user = db.relationship('User', backref='jokes')
+    user = db.relationship('User', backref='dark_jokes')
 
 
 class DarkJoke(db.Model):
@@ -138,6 +138,15 @@ def dark_jokes():
 
     jokes = DarkJoke.query.all()
     return render_template('dark_jokes.html', form=form, jokes=jokes)
+
+@app.route('/like/<int:joke_id>', methods=['POST'])
+@login_required
+def like_joke(joke_id):
+
+    joke = NormalJoke.query.get_or_404(joke_id)
+    joke.likes += 1
+    db.session.commit()
+    return redirect(request.referrer)
 
 migrate = Migrate(app, db)
 if __name__ == '__main__':

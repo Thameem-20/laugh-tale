@@ -1,12 +1,14 @@
-from flask import Flask, render_template, url_for, redirect
+from flask import Flask, render_template, url_for, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField,PasswordField,SubmitField
-from wtforms.validators import InputRequired,Email, Length, ValidationError
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField
+from wtforms.validators import InputRequired, Email, Length, ValidationError
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 from flask_migrate import Migrate
+
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -35,12 +37,16 @@ class NormalJoke(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     joke = db.Column(db.Text, nullable=False)
+    user = db.relationship('User', backref='jokes')
+
 
 class DarkJoke(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     joke = db.Column(db.Text, nullable=False)
+    user = db.relationship('User', backref='jokes')
+
 
 class RegisterForm(FlaskForm):
     username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
@@ -59,11 +65,20 @@ class RegisterForm(FlaskForm):
 
         if existing_user_email:
             raise ValidationError("This email address is already registered.")
-            
+
 class LoginForm(FlaskForm):
     username_email = StringField(validators=[InputRequired(), Length(min=4, max=120)], render_kw={"placeholder": "Username or Email"})
     password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
     submit = SubmitField("Login")
+
+
+class NormalJokeForm(FlaskForm):
+    joke = TextAreaField('Joke', validators=[InputRequired()])
+    submit = SubmitField('Submit')
+
+class DarkJokeForm(FlaskForm):
+    joke = TextAreaField('Joke', validators=[InputRequired()])
+    submit = SubmitField('Submit')
 
 @app.route('/')
 def home():
@@ -82,26 +97,51 @@ def login():
 
     return render_template('login.html', form=form)
 
-@app.route('/dashboard', methods = ['GET','POST'] )
+@app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    return render_template('dashboard.html',  username=current_user.username)
+    return render_template('dashboard.html', username=current_user.username)
 
-@app.route('/register', methods = ['GET','POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data)
-        new_user = User(username=form.username.data,email=form.email.data, password=hashed_password)
+        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('login'))
 
-
     return render_template('register.html', form=form)
 
+@app.route('/normal_jokes', methods=['GET', 'POST'])
+def normal_jokes():
+    form = NormalJokeForm()
+    if form.validate_on_submit():
+        new_joke = NormalJoke(user=current_user, joke=form.joke.data)
+        db.session.add(new_joke)
+        db.session.commit()
+        return redirect(url_for('normal_jokes'))
+
+    jokes = NormalJoke.query.all()
+    return render_template('normal_jokes.html', form=form, jokes=jokes)
+
+@app.route('/dark_jokes', methods=['GET', 'POST'])
+def dark_jokes():
+    form = DarkJokeForm()
+    if form.validate_on_submit():
+        new_joke = DarkJoke(user=current_user, joke=form.joke.data)
+        db.session.add(new_joke)
+        db.session.commit()
+        return redirect(url_for('dark_jokes'))
+
+    jokes = DarkJoke.query.all()
+    return render_template('dark_jokes.html', form=form, jokes=jokes)
+
+migrate = Migrate(app, db)
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+

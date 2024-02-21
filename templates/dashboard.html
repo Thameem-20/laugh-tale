@@ -1,6 +1,10 @@
+<!-- dashboard.html -->
 {% extends 'layout.html' %}
 {% block title %} Dashboard {% endblock title %}
 {% block body %}
-    <h1>login success!</h1>
-    <h4>Welcome! {{username}}</h4>
+    <h1>Welcome, {{ username }}!</h1>
+    <div>
+        <a href="{{ url_for('normal_jokes') }}" class="btn btn-primary">Normal Jokes</a>
+        <a href="{{ url_for('dark_jokes') }}" class="btn btn-dark">Dark Jokes</a>
+    </div>
 {% endblock body %}

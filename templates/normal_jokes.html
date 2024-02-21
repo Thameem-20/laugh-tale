@@ -1,0 +1,27 @@
+<!-- normal_jokes.html -->
+{% extends 'layout.html' %}
+{% block title %} Normal Jokes {% endblock title %}
+{% block body %}
+    <h1>Normal Jokes</h1>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        {{ form.joke.label }}
+        {{ form.joke(class="form-control", placeholder="Write your joke here") }}
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+    <hr>
+    {% for joke in jokes %}
+        <div>
+            <p>{{ joke.joke }}</p>
+            <p>Posted by: {{ joke.user.username }} on {{ joke.date }}</p>
+            <form action="{{ url_for('like_joke', joke_id=joke.id) }}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-primary">Like</button>
+            </form>
+            <form action="{{ url_for('dislike_joke', joke_id=joke.id) }}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Dislike</button>
+            </form>
+            <a href="{{ url_for('reply_joke', joke_id=joke.id) }}" class="btn btn-info">Replies</a>
+            <hr>
+        </div>
+    {% endfor %}
+{% endblock body %}

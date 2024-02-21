@@ -1,0 +1,23 @@
+{% extends 'layout.html' %} {% block title %} Replies {% endblock title %} {%
+block body %}
+<h1>Replies for Joke: {{ joke.joke }}</h1>
+
+{% for reply in replies %}
+<div>
+  <h5>{{ reply.user.username }}</h5>
+  <p>{{ reply.content }}</p>
+  <hr />
+</div>
+{% endfor %}
+
+<h2>Add Reply</h2>
+<form method="POST" action="">
+  {{ form.hidden_tag() }} {{ form.content.label }} {{
+  form.content(class="form-control", placeholder="Write your reply here") }} {{
+  form.submit(class="btn btn-primary") }}
+</form>
+
+<a href="{{ url_for('normal_jokes') }}" class="btn btn-secondary"
+  >Back to Jokes</a
+>
+{% endblock body %}

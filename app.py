@@ -103,6 +103,10 @@ class DarkJokeForm(FlaskForm):
     joke = TextAreaField('Joke', validators=[InputRequired()])
     submit = SubmitField('Submit')
 
+class ReplyForm(FlaskForm):
+    content = TextAreaField('Reply', validators=[InputRequired()])
+    submit = SubmitField('Submit')
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -166,22 +170,27 @@ def dark_jokes():
 @login_required
 def like_joke(joke_id):
     # Get the joke with the given ID from the database
-    joke = NormalJoke.query.get(joke_id)
+    joke = NormalJoke.query.get_or_404(joke_id)
     
-    # Check if the joke exists
-    if joke is None:
-        # Handle the case where the joke doesn't exist
-        flash('Joke not found.', 'error')
-        return redirect(request.referrer)
+    # Check if the user has already liked the joke
+    like = Like.query.filter_by(user_id=current_user.id, joke_id=joke_id).first()
 
-    # Increment the likes count for the joke
-    joke.likes += 1
-    
+    if like:
+        # User has already liked the joke, remove the like
+        db.session.delete(like)
+        flash('You unliked the joke.', 'info')
+    else:
+        # User hasn't liked the joke, add a new like
+        new_like = Like(user_id=current_user.id, joke_id=joke_id)
+        db.session.add(new_like)
+        flash('You liked the joke.', 'success')
+
     # Commit the changes to the database
     db.session.commit()
     
     # Redirect back to the previous page
     return redirect(request.referrer)
+
 
 @app.route('/dislike/<int:joke_id>', methods=['POST'])
 @login_required
@@ -198,30 +207,38 @@ def dislike_joke(joke_id):
     # Redirect back to the previous page
     return redirect(request.referrer)
 
-@app.route('/reply/<int:joke_id>', methods=['POST'])
+@app.route('/reply/<int:joke_id>', methods=['GET', 'POST'])
 @login_required
 def reply_joke(joke_id):
-    # Get the joke with the given ID from the database
     joke = NormalJoke.query.get_or_404(joke_id)
-    
-    if request.method == 'POST':
-        # Get the reply content from the form
-        reply_content = request.form['reply_content']
-        
-        # Create a new reply object
-        new_reply = Reply(user_id=current_user.id, joke_id=joke_id, content=reply_content)
-        
-        # Add the reply to the database
-        db.session.add(new_reply)
-        db.session.commit()
-        
-        # Redirect back to the same page
-        return redirect(request.url)
-    
-    # Fetch all replies for the current joke
     replies = Reply.query.filter_by(joke_id=joke_id).all()
-    
-    return render_template('reply_joke.html', joke=joke, replies=replies)
+
+    form = ReplyForm()
+    if form.validate_on_submit():
+        reply = Reply(user_id=current_user.id, joke_id=joke_id, content=form.content.data)
+        db.session.add(reply)
+        db.session.commit()
+        flash('Your reply has been added.', 'success')
+        return redirect(url_for('reply_joke', joke_id=joke_id))
+
+    return render_template('reply_joke.html', joke=joke, replies=replies, form=form)
+
+@app.route('/reply_dark_joke/<int:joke_id>', methods=['GET', 'POST'])
+@login_required
+def reply_dark_joke(joke_id):
+    joke = DarkJoke.query.get_or_404(joke_id)
+    replies = Reply.query.filter_by(joke_id=joke_id).all()
+
+    form = ReplyForm()
+    if form.validate_on_submit():
+        reply = Reply(user_id=current_user.id, joke_id=joke_id, content=form.content.data)
+        db.session.add(reply)
+        db.session.commit()
+        flash('Your reply has been added.', 'success')
+        return redirect(url_for('reply_dark_joke', joke_id=joke_id))
+
+    return render_template('reply_dark_joke.html', joke=joke, replies=replies, form=form)
+
 
 
 migrate = Migrate(app, db)

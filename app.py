@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect, request
+from flask import Flask, render_template, url_for, redirect, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -7,6 +7,7 @@ from wtforms.validators import InputRequired, Email, Length, ValidationError
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 from flask_migrate import Migrate
+
 
 
 
@@ -37,7 +38,9 @@ class NormalJoke(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     joke = db.Column(db.Text, nullable=False)
-    user = db.relationship('User', backref='dark_jokes')
+    likes = db.Column(db.Integer, default=0)  # Add likes attribute here
+    dislikes = db.Column(db.Integer, default=0)  # Add dislikes attribute here
+    user = db.relationship('User', backref='normal_jokes')
 
 
 class DarkJoke(db.Model):
@@ -45,7 +48,27 @@ class DarkJoke(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     joke = db.Column(db.Text, nullable=False)
+    likes = db.Column(db.Integer, default=0)  # Add likes attribute here
+    dislikes = db.Column(db.Integer, default=0)  # Add dislikes attribute here
     user = db.relationship('User', backref='jokes')
+
+class Like(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    joke_id = db.Column(db.Integer, nullable=False)
+
+class Dislike(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    joke_id = db.Column(db.Integer, nullable=False)
+    # You can add additional fields if needed
+
+class Reply(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    joke_id = db.Column(db.Integer, nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    user = db.relationship('User', backref='replies')
 
 
 class RegisterForm(FlaskForm):
@@ -142,11 +165,64 @@ def dark_jokes():
 @app.route('/like/<int:joke_id>', methods=['POST'])
 @login_required
 def like_joke(joke_id):
+    # Get the joke with the given ID from the database
+    joke = NormalJoke.query.get(joke_id)
+    
+    # Check if the joke exists
+    if joke is None:
+        # Handle the case where the joke doesn't exist
+        flash('Joke not found.', 'error')
+        return redirect(request.referrer)
 
-    joke = NormalJoke.query.get_or_404(joke_id)
+    # Increment the likes count for the joke
     joke.likes += 1
+    
+    # Commit the changes to the database
     db.session.commit()
+    
+    # Redirect back to the previous page
     return redirect(request.referrer)
+
+@app.route('/dislike/<int:joke_id>', methods=['POST'])
+@login_required
+def dislike_joke(joke_id):
+    # Get the joke with the given ID from the database
+    joke = NormalJoke.query.get_or_404(joke_id)
+    
+    # Increment the dislikes count for the joke
+    joke.dislikes += 1
+    
+    # Commit the changes to the database
+    db.session.commit()
+    
+    # Redirect back to the previous page
+    return redirect(request.referrer)
+
+@app.route('/reply/<int:joke_id>', methods=['POST'])
+@login_required
+def reply_joke(joke_id):
+    # Get the joke with the given ID from the database
+    joke = NormalJoke.query.get_or_404(joke_id)
+    
+    if request.method == 'POST':
+        # Get the reply content from the form
+        reply_content = request.form['reply_content']
+        
+        # Create a new reply object
+        new_reply = Reply(user_id=current_user.id, joke_id=joke_id, content=reply_content)
+        
+        # Add the reply to the database
+        db.session.add(new_reply)
+        db.session.commit()
+        
+        # Redirect back to the same page
+        return redirect(request.url)
+    
+    # Fetch all replies for the current joke
+    replies = Reply.query.filter_by(joke_id=joke_id).all()
+    
+    return render_template('reply_joke.html', joke=joke, replies=replies)
+
 
 migrate = Migrate(app, db)
 if __name__ == '__main__':

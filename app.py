@@ -8,9 +8,6 @@ from flask_bcrypt import Bcrypt
 from datetime import datetime
 from flask_migrate import Migrate
 
-
-
-
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -69,6 +66,13 @@ class Reply(db.Model):
     joke_id = db.Column(db.Integer, nullable=False)
     content = db.Column(db.Text, nullable=False)
     user = db.relationship('User', backref='replies')
+
+class DarkJokeReply(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    joke_id = db.Column(db.Integer, nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    user = db.relationship('User', backref='dark_joke_replies')
 
 
 class RegisterForm(FlaskForm):
@@ -227,11 +231,11 @@ def reply_joke(joke_id):
 @login_required
 def reply_dark_joke(joke_id):
     joke = DarkJoke.query.get_or_404(joke_id)
-    replies = Reply.query.filter_by(joke_id=joke_id).all()
+    replies = DarkJokeReply.query.filter_by(joke_id=joke_id).all()
 
     form = ReplyForm()
     if form.validate_on_submit():
-        reply = Reply(user_id=current_user.id, joke_id=joke_id, content=form.content.data)
+        reply = DarkJokeReply(user_id=current_user.id, joke_id=joke_id, content=form.content.data)
         db.session.add(reply)
         db.session.commit()
         flash('Your reply has been added.', 'success')
@@ -239,11 +243,24 @@ def reply_dark_joke(joke_id):
 
     return render_template('reply_dark_joke.html', joke=joke, replies=replies, form=form)
 
+@app.route('/delete_joke/<int:joke_id>', methods=['POST'])
+@login_required
+def delete_joke(joke_id):
+    joke = NormalJoke.query.get_or_404(joke_id)
+    # Check if the current user is the owner of the joke
+    if joke.user_id == current_user.id:
+        db.session.delete(joke)
+        db.session.commit()
+        flash('Your joke has been deleted.', 'success')
+    else:
+        flash('You are not authorized to delete this joke.', 'danger')
+    return redirect(request.referrer)
 
+@app.template_filter('datetimeformat')
+def datetimeformat(value, format='%d/%m/%Y %H:%M'):
+    return value.strftime(format)
 
-migrate = Migrate(app, db)
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
-

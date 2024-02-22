@@ -1,20 +1,35 @@
 {% extends 'layout.html' %} {% block title %} Normal Jokes {% endblock title %}
 {% block body %}
 <h1>Normal Jokes</h1>
-
+<form method="POST" action="">
+  {{ form.hidden_tag() }} {{ form.joke.label }} {{
+  form.joke(class="form-control", placeholder="Write your joke here") }} {{
+  form.submit(class="btn btn-primary") }}
+</form>
 <hr />
 {% for joke in jokes %}
 <div>
   <p>{{ joke.joke }}</p>
-  <p>Posted by: {{ joke.user.username }} on {{ joke.date }}</p>
-
+  <p>
+    Posted by: {{ joke.user.username }} on {{ joke.date.strftime('%d/%m/%Y
+    %H:%M') }}
+  </p>
+  {% if current_user.is_authenticated and joke.user_id == current_user.id %}
+  <form
+    method="POST"
+    action="{{ url_for('delete_joke', joke_id=joke.id) }}"
+    onsubmit="return confirm('Are you sure you want to delete this joke?');"
+  >
+    <button type="submit" class="btn btn-danger">Delete</button>
+  </form>
+  {% endif %}
   <form
     action="{{ url_for('like_joke', joke_id=joke.id) }}"
     method="post"
     style="display: inline"
   >
     <button type="submit" class="btn btn-primary">
-      Like ({{ like_count }})
+      Like ({{ joke.likes }})
     </button>
   </form>
   <form
@@ -22,17 +37,13 @@
     method="post"
     style="display: inline"
   >
-    <button type="submit" class="btn btn-danger">Dislike</button>
+    <button type="submit" class="btn btn-danger">
+      Dislike ({{ joke.dislikes }})
+    </button>
   </form>
   <a href="{{ url_for('reply_joke', joke_id=joke.id) }}" class="btn btn-info"
     >Replies</a
   >
   <hr />
 </div>
-{% endfor %}
-<form method="POST" action="">
-  {{ form.hidden_tag() }} {{ form.joke.label }} {{
-  form.joke(class="form-control", placeholder="Write your joke here") }} {{
-  form.submit(class="btn btn-primary") }}
-</form>
-{% endblock body %}
+{% endfor %} {% endblock body %}

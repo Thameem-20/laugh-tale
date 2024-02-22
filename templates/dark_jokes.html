@@ -2,11 +2,18 @@
 block body %}
 <h1>Dark Jokes</h1>
 
+<form method="POST" action="">
+  {{ form.hidden_tag() }} {{ form.joke.label }} {{
+  form.joke(class="form-control", placeholder="Write your joke here") }} {{
+  form.submit(class="btn btn-primary") }}
+</form>
 <hr />
 {% for joke in jokes %}
+
 <div>
-  <p>{{ joke.joke }}</p>
-  <p>Posted by: {{ joke.user.username }} on {{ joke.date }}</p>
+  <p>{{ joke.user.username }}</p>
+  <p>Posted on: {{ joke.date.strftime('%d/%m/%Y %H:%M') }}</p>
+  <h4>{{ joke.joke }}</h4>
 
   <form
     action="{{ url_for('like_joke', joke_id=joke.id) }}"
@@ -32,12 +39,18 @@ block body %}
   >
     Replies
   </a>
+
+  {% if current_user.is_authenticated and joke.user_id == current_user.id %}
+  <form
+    action="{{ url_for('delete_dark_joke', joke_id=joke.id) }}"
+    method="post"
+    style="display: inline"
+    onsubmit="return confirm('Are you sure you want to delete this joke?');"
+  >
+    <button type="submit" class="btn btn-danger">Delete</button>
+  </form>
+  {% endif %}
+
   <hr />
 </div>
-{% endfor %}
-<form method="POST" action="">
-  {{ form.hidden_tag() }} {{ form.joke.label }} {{
-  form.joke(class="form-control", placeholder="Write your joke here") }} {{
-  form.submit(class="btn btn-primary") }}
-</form>
-{% endblock body %}
+{% endfor %} {% endblock body %}

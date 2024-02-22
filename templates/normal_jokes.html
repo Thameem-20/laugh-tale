@@ -9,11 +9,10 @@
 <hr />
 {% for joke in jokes %}
 <div>
-  <p>{{ joke.joke }}</p>
-  <p>
-    Posted by: {{ joke.user.username }} on {{ joke.date.strftime('%d/%m/%Y
-    %H:%M') }}
-  </p>
+  <p>{{ joke.user.username }}</p>
+  <p>Posted on: {{ joke.date.strftime('%d/%m/%Y %H:%M') }}</p>
+  <h4>{{ joke.joke }}</h4>
+
   {% if current_user.is_authenticated and joke.user_id == current_user.id %}
   <form
     method="POST"

@@ -256,6 +256,20 @@ def delete_joke(joke_id):
         flash('You are not authorized to delete this joke.', 'danger')
     return redirect(request.referrer)
 
+@app.route('/delete_dark_joke/<int:joke_id>', methods=['POST'])
+@login_required
+def delete_dark_joke(joke_id):
+    joke = DarkJoke.query.get_or_404(joke_id)
+    # Check if the current user is the owner of the joke
+    if joke.user_id == current_user.id:
+        db.session.delete(joke)
+        db.session.commit()
+        flash('Your dark joke has been deleted.', 'success')
+    else:
+        flash('You are not authorized to delete this dark joke.', 'danger')
+    return redirect(request.referrer)
+
+
 @app.template_filter('datetimeformat')
 def datetimeformat(value, format='%d/%m/%Y %H:%M'):
     return value.strftime(format)

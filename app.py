@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect, request, flash
+from flask import Flask, render_template, url_for, redirect, request, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -7,6 +7,8 @@ from wtforms.validators import InputRequired, Email, Length, ValidationError
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 from flask_migrate import Migrate
+import json
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -269,6 +271,32 @@ def delete_dark_joke(joke_id):
         flash('You are not authorized to delete this dark joke.', 'danger')
     return redirect(request.referrer)
 
+def read_json(filename):
+    try:
+        with open(filename, 'r') as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        data = {}
+    return data
+
+# Function to write data to JSON file
+def write_json(data, filename):
+    with open(filename, 'w') as file:
+        json.dump(data, file, indent=4)
+
+# Route to handle liking a joke
+@app.route('/like_joke/<joke_id>', methods=['POST'])
+def like_joke(joke_id):
+    likes_dislikes_data = read_json('likes_dislikes.json')
+    
+    # Increment likes count for the specified joke_id
+    likes_dislikes_data[joke_id] = likes_dislikes_data.get(joke_id, {'likes': 0, 'dislikes': 0})
+    likes_dislikes_data[joke_id]['likes'] += 1
+    
+    # Write updated data back to JSON file
+    write_json(likes_dislikes_data, 'likes_dislikes.json')
+    
+    return jsonify({'message': 'Like recorded successfully'})
 
 @app.template_filter('datetimeformat')
 def datetimeformat(value, format='%d/%m/%Y %H:%M'):

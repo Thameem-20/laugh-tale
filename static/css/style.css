@@ -1,0 +1,26 @@
+body {
+  background: #e44d26; /* fallback for old browsers */
+  background: -webkit-linear-gradient(
+    to right,
+    #f16529,
+    #e44d26
+  ); /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(
+    to right,
+    #f16529,
+    #e44d26
+  ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+
+.welcome {
+  text-align: center;
+  color: white;
+  font-family: "Poppins", sans-serif;
+  margin-top: 5%;
+}
+.buttoncont {
+  width: fit-content;
+  margin: 0 auto;
+  border: 1px solid black;
+  
+}

@@ -1,8 +1,10 @@
 {% extends 'layout.html' %}
 {% block title %} Home {% endblock title %}
 {% block body %}
-        <h1>Login-Page using Flask</h1>
+        <h1 class="welcome">Welcome to Laugh-Tale</h1>
+        <div class="buttoncont">
         <a href="{{url_for('login')}}">Login</a>
         <br>
         <a href="{{url_for('register')}}">Signup</a>
+    </div>
     {% endblock body %}

@@ -9,7 +9,6 @@ from datetime import datetime
 from flask_migrate import Migrate
 import json
 
-
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -172,30 +171,37 @@ def dark_jokes():
     jokes = DarkJoke.query.all()
     return render_template('dark_jokes.html', form=form, jokes=jokes)
 
+from flask import jsonify
+
 @app.route('/like/<int:joke_id>', methods=['POST'])
 @login_required
 def like_joke(joke_id):
     # Get the joke with the given ID from the database
     joke = NormalJoke.query.get_or_404(joke_id)
-    
+
     # Check if the user has already liked the joke
     like = Like.query.filter_by(user_id=current_user.id, joke_id=joke_id).first()
 
     if like:
         # User has already liked the joke, remove the like
-        db.session.delete(like)
+        db.session.add(like)
+        joke.likes += 1  # Decrement the like count in the NormalJoke table
         flash('You unliked the joke.', 'info')
-    else:
+    elif like:
         # User hasn't liked the joke, add a new like
         new_like = Like(user_id=current_user.id, joke_id=joke_id)
-        db.session.add(new_like)
+        db.session.delete(new_like)
+        joke.likes -= 1  # Increment the like count in the NormalJoke table
         flash('You liked the joke.', 'success')
 
     # Commit the changes to the database
     db.session.commit()
     
-    # Redirect back to the previous page
-    return redirect(request.referrer)
+    # Return JSON response with updated like count
+    return jsonify({'likes': joke.likes})
+
+
+
 
 
 @app.route('/dislike/<int:joke_id>', methods=['POST'])
@@ -203,15 +209,15 @@ def like_joke(joke_id):
 def dislike_joke(joke_id):
     # Get the joke with the given ID from the database
     joke = NormalJoke.query.get_or_404(joke_id)
-    
+
     # Increment the dislikes count for the joke
     joke.dislikes += 1
-    
+
     # Commit the changes to the database
     db.session.commit()
-    
-    # Redirect back to the previous page
-    return redirect(request.referrer)
+
+    # Return JSON response with updated dislike count
+    return jsonify({'dislikes': joke.dislikes})
 
 @app.route('/reply/<int:joke_id>', methods=['GET', 'POST'])
 @login_required
@@ -271,13 +277,6 @@ def delete_dark_joke(joke_id):
         flash('You are not authorized to delete this dark joke.', 'danger')
     return redirect(request.referrer)
 
-def read_json(filename):
-    try:
-        with open(filename, 'r') as file:
-            data = json.load(file)
-    except FileNotFoundError:
-        data = {}
-    return data
 
 
 @app.template_filter('datetimeformat')

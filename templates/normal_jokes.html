@@ -25,28 +25,82 @@
     <button type="submit" class="btn btn-danger">Delete</button>
   </form>
   {% endif %}
+  <!-- Like button with like count -->
   <form
+    id="like-form-{{ joke.id }}"
     action="{{ url_for('like_joke', joke_id=joke.id) }}"
     method="post"
     style="display: inline"
   >
-    <button type="submit" class="btn btn-primary">
-      Like ({{ joke.likes }})
+    <button
+      type="button"
+      class="btn btn-primary like-btn"
+      data-joke-id="{{ joke.id }}"
+    >
+      Like <span class="like-count">{{ joke.likes }}</span>
     </button>
   </form>
+
   <form
+    id="dislike-form-{{ joke.id }}"
     action="{{ url_for('dislike_joke', joke_id=joke.id) }}"
     method="post"
     style="display: inline"
   >
-    <button type="submit" class="btn btn-danger">
-      Dislike ({{ joke.dislikes }})
+    <button
+      type="button"
+      class="btn btn-danger dislike-btn"
+      data-joke-id="{{ joke.id }}"
+    >
+      Dislike <span class="dislike-count">{{ joke.dislikes }}</span>
     </button>
   </form>
+
   <a href="{{ url_for('reply_joke', joke_id=joke.id) }}" class="btn btn-info"
     >Replies</a
   >
   <hr />
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $(".like-btn").click(function (e) {
+      e.preventDefault();
+      var jokeId = $(this).data("joke-id");
+      var form = $("#like-form-" + jokeId);
+      $.ajax({
+        type: form.attr("method"),
+        url: form.attr("action"),
+        success: function (response) {
+          // Update the like count on the button
+          var likeCount = response.likes;
+          $("#like-form-" + jokeId + " .btn-primary").html(
+            "Like (" + likeCount + ")"
+          );
+        },
+      });
+    });
+  });
+
+  $(document).ready(function () {
+    $(".dislike-btn").click(function (e) {
+      e.preventDefault();
+      var jokeId = $(this).data("joke-id");
+      var form = $("#dislike-form-" + jokeId);
+      $.ajax({
+        type: form.attr("method"),
+        url: form.attr("action"),
+        success: function (response) {
+          // Update the dislike count on the button
+          var dislikeCount = response.dislikes;
+          $("#dislike-form-" + jokeId + " .btn-danger").html(
+            "Dislike (" + dislikeCount + ")"
+          );
+        },
+      });
+    });
+  });
+</script>
 
 {% endfor %} {% endblock body %}

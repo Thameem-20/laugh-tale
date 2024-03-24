@@ -6,12 +6,16 @@ block head %} {{ super() }}
   href="{{ url_for('static', filename='css/style.css') }}"
 />
 {% endblock head %} {% block body %}
-<h1>Login Page</h1>
-<form method="POST" action="">
-  {{form.hidden_tag() }} {{ form.username_email }} <br />
-  {{form.password}} <br />
-  {{form.submit}}
-</form>
-<a href="{{url_for('register')}}">Dont have an Account? Sign-up</a>
+<div class="main">
+  <p align="center" class="sign">Login Page</p>
+  <form class="form1" method="POST" action="">
+    {{form.hidden_tag() }} {{ form.username_email }} <br />
+    {{form.password}} <br />
+    {{form.submit}}
+  </form>
+  <a align="center" class="forgot" href="{{url_for('register')}}"
+    >Dont have an Account? Sign-up</a
+  >
+</div>
 
 {% endblock body %}

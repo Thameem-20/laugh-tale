@@ -77,10 +77,10 @@ class DarkJokeReply(db.Model):
 
 
 class RegisterForm(FlaskForm):
-    username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
-    email = StringField(validators=[InputRequired(), Email(message="Invalid email"), Length(max=120)], render_kw={"placeholder": "Email"})
-    password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
-    submit = SubmitField("Register")
+    username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"class": "un","placeholder": "Username"})
+    email = StringField(validators=[InputRequired(), Email(message="Invalid email"), Length(max=120)], render_kw={"class": "un","placeholder": "Email"})
+    password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"class": "pass","placeholder": "Password"})
+    submit = SubmitField("Register", render_kw={"class": "submit"})
 
     def validate_username(self, username):
         existing_user_username = User.query.filter_by(username=username.data).first()
@@ -95,9 +95,9 @@ class RegisterForm(FlaskForm):
             raise ValidationError("This email address is already registered.")
 
 class LoginForm(FlaskForm):
-    username_email = StringField(validators=[InputRequired(), Length(min=4, max=120)], render_kw={"placeholder": "Username or Email"})
-    password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
-    submit = SubmitField("Login")
+    username_email = StringField(validators=[InputRequired(), Length(min=4, max=120)], render_kw={"class": "un", "placeholder": "Username or Email"})
+    password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"class": "un", "placeholder": "Password"})
+    submit = SubmitField("Login",  render_kw={"class": "submit"})
 
 
 class NormalJokeForm(FlaskForm):

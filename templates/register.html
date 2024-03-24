@@ -1,13 +1,18 @@
-{% extends 'layout.html' %}
-{% block title %} Sign Up {% endblock title %}
-{% block body %}
-        <h1>Sign-Up page</h1>
-        <form method="POST" action="">
-            {{form.hidden_tag() }}
-            Username:{{form.username}} <br>
-            Email:{{form.email}} <br>
-            Password:{{form.password}} <br>
-            {{form.submit}}
-        </form>
-        <a href="{{url_for('login')}}">Already have an Account? Login</a>
-    {% endblock body %}
+{% extends 'layout.html' %} {% block title %} Sign Up {% endblock title %} {%
+block body %}
+<div class="main">
+  <p class="sign" align="center">Sign in</p>
+  <form class="form1" method="POST" action="">
+    {{form.hidden_tag() }} {{form.username}} <br />
+    {{form.email}} <br />
+    {{form.password}} <br />
+    {{form.submit}} <br />
+</form>
+
+    <a  class="forgot" align="center" href="{{url_for('login')}}"
+      >Already have an Account? Login</a
+    >
+  
+</div>
+  {% endblock body %}
+

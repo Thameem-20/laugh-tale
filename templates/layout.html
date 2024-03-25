@@ -13,6 +13,10 @@
     />
     <link
       rel="stylesheet"
+      href="{{url_for('static',filename='css/joke.css')}}"
+    />
+    <link
+      rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
     />
     <link
@@ -40,7 +44,7 @@
     <title>{% block title %} {% endblock title %}</title>
   </head>
   <body>
-    <nav  class="navbar navbar-expand-lg bg-body-tertiary">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
         <a style="font-weight: bold !important" class="navbar-brand" href="#"
           >Laugh Tale</a
@@ -56,7 +60,7 @@
         >
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div  class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
           <div class="navbar-nav">
             <a class="nav-link active" aria-current="page" href="#">Home</a>
             <a style="font-weight: 500 !important" class="nav-link" href="#"
@@ -65,7 +69,7 @@
             <a style="font-weight: 500 !important" class="nav-link" href="#"
               >Contributors</a
             >
-            <a  style="font-weight: 500 !important;" class="nav-link" href="#"
+            <a style="font-weight: 500 !important" class="nav-link" href="#"
               >Contact</a
             >
           </div>

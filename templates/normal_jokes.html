@@ -5,18 +5,19 @@
 >
 <h1 align="center">Normal Jokes</h1>
 <div class="writejoke">
-<form method="POST" action="">
-  {{ form.hidden_tag() }} {{ form.joke.label }} {{
-  form.joke(class="form-control", placeholder="Write your joke here") }} {{
-  form.submit(class="btn btn-primary") }}
-</form>
+  <form method="POST" action="">
+    {{ form.hidden_tag() }} {{ form.joke.label }} {{
+    form.joke(class="form-control", placeholder="Write your joke here") }} {{
+    form.submit(class="btn btn-primary") }}
+  </form>
 </div>
 <hr />
 {% for joke in jokes %}
-<div>
-  <p>{{ joke.user.username }}</p>
-  <p>Posted on: {{ joke.date.strftime('%d/%m/%Y %H:%M') }}</p>
-  <h4>{{ joke.joke }}</h4>
+<div class="jokecard">
+  <p class="writername">{{ joke.user.username }}</p>
+  <p class="postdate">Posted on: {{ joke.date.strftime('%d/%m/%Y') }}</p>
+  <div class="jokecont">
+  <p class="jokedesc">{{ joke.joke }}</h>
 
   {% if current_user.is_authenticated and joke.user_id == current_user.id %}
   <form
@@ -24,7 +25,7 @@
     action="{{ url_for('delete_joke', joke_id=joke.id) }}"
     onsubmit="return confirm('Are you sure you want to delete this joke?');"
   >
-    <button type="submit" class="btn btn-danger">Delete</button>
+    <button type="submit" class="delbtn">Delete</button>
   </form>
   {% endif %}
   <!-- Like button with like count -->
@@ -34,12 +35,8 @@
     method="post"
     style="display: inline"
   >
-    <button
-      type="button"
-      class="btn btn-primary like-btn"
-      data-joke-id="{{ joke.id }}"
-    >
-      Like <span class="like-count">{{ joke.likes }}</span>
+    <button type="button" class="likebtn" data-joke-id="{{ joke.id }}">
+      Like
     </button>
   </form>
 
@@ -49,19 +46,15 @@
     method="post"
     style="display: inline"
   >
-    <button
-      type="button"
-      class="btn btn-danger dislike-btn"
-      data-joke-id="{{ joke.id }}"
-    >
-      Dislike <span class="dislike-count">{{ joke.dislikes }}</span>
+    <button type="button" class="dislikebtn" data-joke-id="{{ joke.id }}">
+      Dislike 
     </button>
   </form>
 
-  <a href="{{ url_for('reply_joke', joke_id=joke.id) }}" class="btn btn-info"
+  <a href="{{ url_for('reply_joke', joke_id=joke.id) }}" class="repbtn"
     >Replies</a
   >
-  <hr />
+</div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

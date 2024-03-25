@@ -101,7 +101,7 @@ class LoginForm(FlaskForm):
 
 
 class NormalJokeForm(FlaskForm):
-    joke = TextAreaField('Joke', validators=[InputRequired()])
+    joke = TextAreaField('Joke:', validators=[InputRequired()],  render_kw={"class": "jokehead"})
     submit = SubmitField('Submit')
 
 class DarkJokeForm(FlaskForm):
@@ -176,28 +176,15 @@ from flask import jsonify
 @app.route('/like/<int:joke_id>', methods=['POST'])
 @login_required
 def like_joke(joke_id):
-    # Get the joke with the given ID from the database
     joke = NormalJoke.query.get_or_404(joke_id)
 
-    # Check if the user has already liked the joke
-    like = Like.query.filter_by(user_id=current_user.id, joke_id=joke_id).first()
-
-    if like:
-        # User has already liked the joke, remove the like
-        db.session.add(like)
-        joke.likes += 1  # Decrement the like count in the NormalJoke table
-        flash('You unliked the joke.', 'info')
-    elif like:
-        # User hasn't liked the joke, add a new like
-        new_like = Like(user_id=current_user.id, joke_id=joke_id)
-        db.session.delete(new_like)
-        joke.likes -= 1  # Increment the like count in the NormalJoke table
-        flash('You liked the joke.', 'success')
+    # Increment the dislikes count for the joke
+    joke.likes += 1
 
     # Commit the changes to the database
     db.session.commit()
-    
-    # Return JSON response with updated like count
+
+    # Return JSON response with updated dislike count
     return jsonify({'likes': joke.likes})
 
 

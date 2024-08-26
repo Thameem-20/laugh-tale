@@ -1,11 +1,39 @@
 <!-- dashboard.html -->
 {% extends 'layout.html' %} {% block title %} Dashboard {% endblock title %} {%
 block body %}
-<h3 class="">Welcome, {{ username }}!</h3>
+<h3 style="color: white; padding-left: 42%; padding-top: 5%;" class="">Welcome, {{ username }}!</h3>
 <div class="jokecat">
-  <a href="{{ url_for('normal_jokes') }}" class="btn btn-primary"
-    >Normal Jokes</a
-  >
-  <a href="{{ url_for('dark_jokes') }}" class="btn btn-dark">Dark Jokes</a>
+  <div class="slide-container">
+  
+    <div class="wrapper">
+      <div class="clash-card barbarian">
+        <div class="clash-card__image clash-card__image--barbarian">
+          <img src="../static/images/laughing-face-with-tears-3d-emoji-icon-png.jpg" alt="barbarian" />
+        </div>
+        <div class="clash-card__unit-name">Normal jokes</div>
+        <div class="clash-card__unit-description">
+          <a href="{{ url_for('normal_jokes') }}">Click here for normal jokes</a>
+        </div>
+      </div> <!-- end clash-card barbarian-->
+    </div> <!-- end wrapper -->
+    
+  </div> <!-- end container -->
+  <div class="slide-container">
+
+    <div class="wrapper">
+      <div class="clash-card barbarian">
+        <div class="clash-card__image clash-card__image--barbarian">
+          <img class="image2" src="../static/images/images-removebg-preview.png" alt="barbarian" />
+        </div>
+        <div class="clash-card__unit-name">Dark jokes</div>
+        <div class="clash-card__unit-description">
+          <a href="{{ url_for('dark_jokes') }}">Click here for Dark jokes</a>
+        </div>
+      </div> <!-- end clash-card barbarian-->
+    </div> <!-- end wrapper -->
+    
+  </div> <!-- end container -->
 </div>
+
 {% endblock body %}
+
